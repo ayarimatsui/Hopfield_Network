@@ -19,8 +19,8 @@ class Hopfield_Network():
 
     def potential_energy(self, input_flatten):
         # potential energyを計算して返す
-        V = -1 / 2 * input_flatten.T @ self.weight @ input_flatten + np.dot(self.theta.T, input_flatten)
-        return V
+        V = -1 / 2 * input_flatten.T @ self.weight @ input_flatten + self.theta.T @ input_flatten
+        return V[0]
 
 
     # 画像を想起
@@ -29,7 +29,8 @@ class Hopfield_Network():
         input_flatten = np.ravel(input)  # 入力を一次元に平坦化
         energy = self.potential_energy(input_flatten)  # エネルギーを計算
         for i in range(loop_num):
-            input_flatten = np.sign(np.dot(self.weight, input_flatten) - self.theta)
+            input_flatten = np.sign(np.dot(input_flatten, self.weight.T) - self.theta.T)
+            input_flatten = np.ravel(input_flatten)
             new_energy = self.potential_energy(input_flatten)
             # エネルギーが前と変わらなくなったら(収束したら)ループから抜ける
             if new_energy == energy:

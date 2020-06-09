@@ -102,12 +102,12 @@ def main1():
         similarity, correct = check(image, recollected_img)
         similarity_sum += similarity / num_of_trials
         correct_sum += correct / num_of_trials
-        # 最後の5回の試行の時のみ、元画像、ノイズを加えた画像、想起された画像を表示
+        # 最後の5回の試行の時のみ、元画像、ノイズを加えた画像、想起された画像を表示したいのでリストに保存しておく
         if i >= num_of_trials - 5:
             original_list.append(image)
             noise_added_list.append(noise_added_img)
             recollected_list.append(recollected_img)
-
+    # 描画
     plot(original_list, noise_added_list, recollected_list)
     print("類似度 : {},   正答率 : {:.3f}".format(similarity_sum, correct_sum))
 

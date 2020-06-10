@@ -28,7 +28,7 @@ class Hopfield_Network():
         # 入力は5x5
         input_flatten = np.ravel(input)  # 入力を一次元に平坦化
         energy = self.potential_energy(input_flatten)  # エネルギーを計算
-        for i in range(loop_num):
+        for _ in range(loop_num):
             input_flatten = np.sign(np.dot(input_flatten, self.weight.T) - self.theta.T)
             input_flatten = np.ravel(input_flatten)
             new_energy = self.potential_energy(input_flatten)

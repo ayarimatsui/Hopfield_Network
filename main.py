@@ -116,7 +116,7 @@ def main1():
 
 # main1()と同条件で画像の種類を6程度まで徐々に増やして想起性能を調べる
 def main2():
-    num_of_images = [n for n in range(2, 7)]  # 画像の種類は1~6種類
+    num_of_images = [n for n in range(2, 7)]  # 画像の種類は2~6種類
     num_of_trials = 100  # 試行回数は100回とする
     noise = int(25 * 0.12)   # 12%のノイズを加える
     for n in num_of_images:
@@ -150,7 +150,57 @@ def main2():
         print("画像の種類 : {},   類似度 : {:.1f},   正答率 : {:.1f}".format(n, similarity_sum, correct_sum * 100))
 
 
+# 画像が1~6種類(2種類と4種類)の場合について，ノイズを0%から100%まで徐々に増やして想起性能を調べる
+def main3():
+    num_of_images = [n for n in range(1, 7)]  # 画像の種類は1~6種類
+    num_of_trials = 100  # 試行回数は100回とする
+    noise_list = [i for i in range(0, 101, 4)]   # 0~100%まで4%ずつノイズを増やす
+    total_sim_list = []
+    total_acc_list = []
+    for n in num_of_images:
+        sim_list = []
+        acc_list = []
+        for noise_percentage in noise_list:
+            similarity_sum = 0
+            correct_sum = 0
+            for i in range(num_of_trials):
+                hopfield = Hopfield_Network()
+                image = create_images(n)  # n個の画像を生成
+                hopfield.train(image)   # 元画像を記憶させる
+                for j in range(n):
+                    target_image = image[j]
+                    noise = int(25 * noise_percentage / 100)   # ノイズを加える
+                    noise_added_img = add_noise(target_image, noise)
+                    recollected_img = hopfield.recollect(noise_added_img)
+                    similarity, correct = check(target_image, recollected_img)
+                    similarity_sum += similarity / (n * num_of_trials)
+                    correct_sum += correct / (n * num_of_trials)
+            
+            sim_list.append(similarity_sum)
+            acc_list.append(correct_sum * 100)
+
+        total_sim_list.append(sim_list)
+        total_acc_list.append(acc_list)
+    
+    # グラフの描画
+    fig, axes = plt.subplots(3, 2, figsize=(15, 10))
+    for i in range(len(num_of_images)):
+        axes.flat[i].plot(noise_list, total_sim_list[i], label='similarity')
+        axes.flat[i].plot(noise_list, total_acc_list[i], label='accuracy')
+        axes.flat[i].set_xlabel("noise rate (%)")
+        axes.flat[i].set_xlim(0, 100)
+        axes.flat[i].set_ylabel("similarity and accuracy (%)")
+        axes.flat[i].set_ylim(0, 101)
+        axes.flat[i].legend(loc="best")
+        axes.flat[i].set_title("Similarity, Accuracy and Noise (image types: {})".format(i+1))
+    # 余白を設定
+    plt.subplots_adjust(wspace=0.4, hspace=0.6)
+    # グラフを保存
+    plt.savefig("figures/figure3.png")
+    
+
 
 if __name__ == '__main__':
-    main1()
-    main2()
+    #main1()
+    #main2()
+    main3()

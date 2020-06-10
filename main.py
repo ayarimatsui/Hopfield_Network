@@ -79,8 +79,7 @@ def plot(original, noise_added, recollected, figsize=(5, 7)):
         for ax in axrow:
             ax.xaxis.set_visible(False)
             ax.yaxis.set_visible(False)
-    # プロットした画像を保存
-    plt.savefig('figure.png')
+    return fig
 
 
 # 1種類の 5x5の2値(+1/-1)画像を覚えさせ，元画像にノイズ(5~20%の一通り)を加えた画像を初期値として想起する実験
@@ -108,9 +107,50 @@ def main1():
             noise_added_list.append(noise_added_img)
             recollected_list.append(recollected_img)
     # 描画
-    plot(original_list, noise_added_list, recollected_list)
-    print("類似度 : {},   正答率 : {:.3f}".format(similarity_sum, correct_sum))
+    fig = plot(original_list, noise_added_list, recollected_list)
+    plt.text(-15, -27, 'Number of Types: 1   Noise Rate: 12%', fontsize=13)
+    plt.text(-10, 6.5, 'similarity: {:.1f},     accuracy: {:.1f}'.format(similarity_sum, correct_sum * 100))
+    plt.savefig("figures/figure1.png")
+    print("類似度 : {:.1f},   正答率 : {:.1f}".format(similarity_sum, correct_sum * 100))
+
+
+# main1()と同条件で画像の種類を6程度まで徐々に増やして想起性能を調べる
+def main2():
+    num_of_images = [n for n in range(2, 7)]  # 画像の種類は1~6種類
+    num_of_trials = 100  # 試行回数は100回とする
+    noise = int(25 * 0.12)   # 12%のノイズを加える
+    for n in num_of_images:
+        similarity_sum = 0
+        correct_sum = 0
+        # 画像描画用
+        original_list = []
+        noise_added_list = []
+        recollected_list = []
+        for i in range(num_of_trials):
+            hopfield = Hopfield_Network()
+            image = create_images(n)  # n個の画像を生成
+            hopfield.train(image)   # 元画像を記憶させる
+            for j in range(n):
+                target_image = image[j]
+                noise_added_img = add_noise(target_image, noise)
+                recollected_img = hopfield.recollect(noise_added_img)
+                similarity, correct = check(target_image, recollected_img)
+                similarity_sum += similarity / (n * num_of_trials)
+                correct_sum += correct / (n * num_of_trials)
+                # 最後の試行の時のみ、元画像、ノイズを加えた画像、想起された画像を表示したいのでリストに保存しておく
+                if i == num_of_trials - 1:
+                    original_list.append(target_image)
+                    noise_added_list.append(noise_added_img)
+                    recollected_list.append(recollected_img)
+        # 最後の試行の時のみ、元画像、ノイズを加えた画像、想起された画像を表示
+        fig = plot(original_list, noise_added_list, recollected_list, figsize=(5, n+2))
+        plt.text(-10-n, 6.8, 'Number of Types: {}   Noise Rate: 12%'.format(n), fontsize=13)
+        plt.text(-6, 5.5, 'similarity: {:.1f},     accuracy: {:.1f}'.format(similarity_sum, correct_sum * 100))
+        plt.savefig("figures/figure2_{}.png".format(n))
+        print("画像の種類 : {},   類似度 : {:.1f},   正答率 : {:.1f}".format(n, similarity_sum, correct_sum * 100))
+
 
 
 if __name__ == '__main__':
     main1()
+    main2()

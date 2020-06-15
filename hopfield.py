@@ -9,12 +9,21 @@ class Hopfield_Network():
         self.weight = np.zeros([5 * 5, 5 * 5])  # 重みパラメータ初期化
 
 
+    # 自己結合なし
     def train(self, train_list):
         N = len(train_list)
         for i in range(N):
             train_flatten = np.ravel(train_list[i]).reshape([5 * 5, 1])  # 一次元化
             self.weight += np.dot(train_flatten, train_flatten.T) / N
         np.fill_diagonal(self.weight, 0)  # 強制的に対角成分は、w_i_i = 0 とする
+
+
+    # 自己結合あり
+    def train_with_self_connection(self, train_list):
+        N = len(train_list)
+        for i in range(N):
+            train_flatten = np.ravel(train_list[i]).reshape([5 * 5, 1])  # 一次元化
+            self.weight += np.dot(train_flatten, train_flatten.T) / N
 
 
     def potential_energy(self, input_flatten):
